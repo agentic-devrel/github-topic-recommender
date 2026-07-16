@@ -331,10 +331,13 @@ poetry run github-topic-recommender --help
 
 To drop the `poetry run` prefix, activate the environment with `eval $(poetry env activate)`.
 
-Set a GitHub token to raise API rate limits (optional but recommended):
+Set a GitHub token to raise API rate limits (optional but recommended).
+The CLI reads `GITHUB_TOKEN` from the environment, loading it from a
+`.env` file in the project root automatically:
 
 ```bash
-export GITHUB_TOKEN=ghp_...
+cp .env.example .env
+# then edit .env and set GITHUB_TOKEN=ghp_...
 ```
 
 ## Usage
