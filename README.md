@@ -1,12 +1,33 @@
-# GitHub Topic Recommender
+# GitHub Topic Recommender — Find the Best GitHub Topics for Your Repository
 
-**Analyze your project and discover relevant, popular GitHub repository topics to improve discoverability.**
+![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue)
+![Status: MVP](https://img.shields.io/badge/status-MVP-orange)
+![No LLM required](https://img.shields.io/badge/AI-not%20required-lightgrey)
 
-GitHub Topic Recommender is an open-source repository analysis tool that recommends established GitHub topics for a project based on its content, niche, comparable repositories, topic popularity, activity, and semantic relevance.
+**GitHub Topic Recommender is a free, open-source CLI that analyzes your project and recommends relevant, popular GitHub repository topics (repo tags) to improve discoverability on GitHub.**
 
-Use it to find accurate repository topics for developer tools, open-source libraries, frameworks, applications, datasets, and emerging fields such as DevSecOps, AI security, and agentic engineering.
+It answers a common question — *"which GitHub topics should I add to my repository?"* — with evidence instead of guesswork: it finds comparable repositories on GitHub, measures which topics they actually use, and ranks candidates by niche prevalence, popularity, activity, specificity, and relevance to your project.
 
-> GitHub topics help people classify repositories, explore subject areas, and discover related projects. This tool helps you select topics that are both relevant to your project and actively used across GitHub.
+Use it to choose accurate repository topics for developer tools, open-source libraries, frameworks, CLIs, applications, datasets, and emerging fields such as DevSecOps, AI security, MLSecOps, platform engineering, and agentic engineering.
+
+> **What are GitHub topics?** Topics are the public labels (tags) attached to a GitHub repository. They classify the project, power GitHub's `topic:` search qualifier and topic pages, and help users discover related projects and technical communities. Choosing established, relevant topics is one of the highest-leverage ways to make a repository easier to find on GitHub.
+
+## Quick Start
+
+```bash
+# Install with Poetry (Python 3.13+, from a clone of this repository)
+poetry install
+
+# Recommend topics for an existing GitHub repository
+poetry run github-topic-recommender analyze OWNER/REPOSITORY
+
+# Recommend topics from a plain-text project description
+poetry run github-topic-recommender recommend --description "An open-source DevSecOps dependency scanner"
+
+# See which topics a niche actually uses
+poetry run github-topic-recommender explore "AI security"
+```
+
 
 ## Why GitHub Topic Recommender?
 
@@ -36,6 +57,8 @@ GitHub Topic Recommender analyzes repository metadata and comparable projects to
 - **Discoverability report** — Identify missing, redundant, or weak repository topics.
 
 ## Example
+
+> Illustrative example. Actual output depends on the live GitHub sample at the time of analysis and always includes the evidence behind each topic.
 
 ### Input
 
@@ -71,9 +94,9 @@ command-line-tool
 | `sbom` | Standard/artifact | Connects the project to software bill-of-materials tooling |
 | `command-line-tool` | Project type | Helps users discover CLI-based developer tools |
 
-## How It Works
+## How Does GitHub Topic Recommender Work?
 
-GitHub Topic Recommender uses a multi-stage analysis pipeline.
+GitHub Topic Recommender uses a multi-stage, fully deterministic analysis pipeline — no LLM or AI model is involved ([details](docs/recommend-command.md)).
 
 ### 1. Analyze the project
 
@@ -134,7 +157,7 @@ Candidate topics are ranked, filtered, and grouped into practical categories:
 - Technologies and ecosystems
 - Intended audience
 
-## Topic Ranking
+## How Are Topics Ranked?
 
 Raw popularity alone does not produce useful recommendations. Popular topics can be too broad, while highly relevant niche topics may appear less frequently.
 
@@ -289,23 +312,30 @@ A recommendation report can include:
 
 ## Installation
 
-Installation instructions will depend on the first supported distribution format.
+Requires Python 3.13+. For a full walkthrough (including how to create a GitHub token), see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md).
 
-Planned options may include:
+Install with [Poetry](https://python-poetry.org/) from a clone of this repository:
 
 ```bash
-# CLI package
-github-topic-recommender analyze OWNER/REPOSITORY
+poetry install
 
-# Project description
-github-topic-recommender recommend \
-  --description "An open-source DevSecOps dependency scanner"
-
-# Niche analysis
-github-topic-recommender explore "AI security"
+# Or, including dev dependencies (pytest)
+poetry install --with dev
 ```
 
-> The commands above describe the intended interface. Update this section when the first executable release is available.
+Then run the CLI through Poetry's environment:
+
+```bash
+poetry run github-topic-recommender --help
+```
+
+To drop the `poetry run` prefix, activate the environment with `eval $(poetry env activate)`.
+
+Set a GitHub token to raise API rate limits (optional but recommended):
+
+```bash
+export GITHUB_TOKEN=ghp_...
+```
 
 ## Usage
 
@@ -318,7 +348,8 @@ github-topic-recommender analyze OWNER/REPOSITORY
 ### Analyze a local project
 
 ```bash
-github-topic-recommender analyze .
+github-topic-recommender recommend \
+  --description "An open-source DevSecOps dependency scanner"
 ```
 
 ### Explore topics for a niche
@@ -333,13 +364,21 @@ github-topic-recommender explore "DevSecOps"
 github-topic-recommender analyze OWNER/REPOSITORY --format json
 ```
 
+Markdown reports are also supported with `--format markdown`.
+
 ### Limit the number of recommendations
 
 ```bash
 github-topic-recommender analyze OWNER/REPOSITORY --limit 12
 ```
 
-> Replace these examples with the implemented commands before the first release.
+### Control the sample size
+
+```bash
+github-topic-recommender analyze OWNER/REPOSITORY --max-repos 200
+```
+
+See [mvp-implementation.md](mvp-implementation.md) for the MVP scope and architecture.
 
 ## Topic Selection Principles
 
@@ -409,6 +448,18 @@ For better overall repository discoverability, combine accurate topics with:
 
 GitHub Topic Recommender optimizes **truthful topic selection**, not keyword stuffing or guaranteed search rankings.
 
+### Suggested metadata for this repository
+
+Practicing what it preaches, this repository should use a description and topics like:
+
+```text
+Description: CLI that recommends relevant, popular GitHub topics for your
+repository based on evidence from comparable projects.
+
+Topics: github-topics, discoverability, github-seo, seo, developer-tools,
+cli, github-api, repository-management, open-source, devrel
+```
+
 ## Data Sources
 
 Depending on the implementation, analysis may use:
@@ -425,6 +476,36 @@ Depending on the implementation, analysis may use:
 
 Users are responsible for complying with applicable GitHub API terms, rate limits, and acceptable-use requirements.
 
+## Frequently Asked Questions
+
+### How many topics can a GitHub repository have?
+
+A GitHub repository can have up to 20 topics. In practice, a focused set of 5–12 accurate topics — mixing one or two broad categories, the primary niche, specific capabilities, key technologies, and the project type — usually serves discoverability better than using all 20.
+
+### How do I add topics to a GitHub repository?
+
+On the repository page, click the gear icon next to **About**, type topics into the **Topics** field, and save. From the command line: `gh repo edit OWNER/REPO --add-topic devsecops --add-topic cli`.
+
+### Do GitHub topics improve SEO?
+
+Topics directly improve discovery **within GitHub**: topic pages, the `topic:` search qualifier, and related-project surfaces. They are public metadata that search engines and AI assistants can read, but they are not a guaranteed external ranking factor — treat external SEO benefits as secondary and focus on accurate classification.
+
+### Which GitHub topics should I add to my repository?
+
+The ones that comparable repositories in your niche actually use and that your project genuinely supports. That is exactly what this tool measures: run `github-topic-recommender analyze OWNER/REPO` and review the evidence behind each recommendation.
+
+### Does GitHub Topic Recommender use AI or an LLM?
+
+No. The pipeline is deterministic: keyword extraction, GitHub search, counting, and a fixed scoring formula. The same input and search results always produce the same recommendations. See [docs/recommend-command.md](docs/recommend-command.md).
+
+### Is GitHub Topic Recommender free?
+
+Yes. It is open source and uses only the public GitHub REST API. An optional free personal access token raises API rate limits.
+
+### Can it analyze a project that is not on GitHub yet?
+
+Yes — use `github-topic-recommender recommend --description "..."` with a plain-text description. This is useful for choosing topics before publishing a new repository.
+
 ## Limitations
 
 - GitHub topics are assigned by repository maintainers and may be incomplete or inconsistent.
@@ -440,65 +521,20 @@ Reports should disclose sample size, data collection time, filters, and confiden
 
 ## Roadmap
 
-- [ ] Analyze repository descriptions and README files
-- [ ] Search for comparable GitHub repositories
-- [ ] Collect and normalize repository topics
-- [ ] Calculate topic frequency and niche prevalence
+- [x] Analyze repository descriptions and README files
+- [x] Search for comparable GitHub repositories
+- [x] Collect and normalize repository topics
+- [x] Calculate topic frequency and niche prevalence
 - [ ] Calculate global and niche-specific topic lift
 - [ ] Build a topic co-occurrence graph
 - [ ] Add semantic repository matching
-- [ ] Generate explainable topic recommendations
+- [x] Generate explainable topic recommendations
 - [ ] Detect redundant and unsupported topics
 - [ ] Track topic popularity over time
-- [ ] Export reports as JSON, CSV, and Markdown
-- [ ] Provide a command-line interface
+- [ ] Export reports as JSON, CSV, and Markdown (JSON and Markdown available)
+- [x] Provide a command-line interface
 - [ ] Provide a web interface
 - [ ] Provide a reusable API
 - [ ] Add repository topic audits
 - [ ] Add organization-wide repository analysis
 
-## Contributing
-
-Contributions are welcome.
-
-Useful contribution areas include:
-
-- GitHub data collection
-- Topic normalization
-- Semantic search
-- Recommendation algorithms
-- Topic ranking
-- Information retrieval
-- Statistical analysis
-- CLI and API development
-- Documentation
-- Evaluation datasets
-
-Before submitting a pull request, open an issue describing the proposed change, use case, and expected behavior.
-
-## Responsible Recommendations
-
-This project should recommend only topics that accurately describe a repository.
-
-It should not:
-
-- Encourage irrelevant topic assignment
-- Promise guaranteed search rankings
-- Present stars as a direct measurement of quality
-- Invent popularity data
-- Conceal sampling limitations
-- Treat external SEO improvements as proven outcomes
-
-Every recommendation should be explainable and supported by project content or relevant repository evidence.
-
-## License
-
-Add an open-source license before publishing the first release.
-
-A permissive license such as MIT or Apache-2.0 may be appropriate for a developer tool, but the final choice should reflect the project’s intended usage and contribution model.
-
-## Acknowledgments
-
-This project uses public GitHub repository metadata to study topic usage and improve repository classification and discoverability.
-
-GitHub is a trademark of GitHub, Inc. This project is independent and is not affiliated with, endorsed by, or sponsored by GitHub.
