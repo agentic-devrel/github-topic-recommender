@@ -1,13 +1,22 @@
 [project]
 name = "github-topic-recommender"
 version = "0.1.0"
-description = ""
+description = "Recommend relevant, established GitHub repository topics based on comparable repositories."
 authors = [
     {name = "RiccardoBiosas",email = "rbios@protonmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "requests (>=2.31,<3.0)",
+]
+
+[project.scripts]
+github-topic-recommender = "github_topic_recommender.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest (>=8.0,<9.0)",
 ]
 
 [tool.poetry]
