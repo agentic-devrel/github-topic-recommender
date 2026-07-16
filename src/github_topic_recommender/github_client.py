@@ -49,7 +49,8 @@ class GitHubClient:
             if remaining == "0":
                 raise GitHubError(
                     "GitHub API rate limit exceeded. Provide a token via "
-                    "--token or the GITHUB_TOKEN environment variable."
+                    "--token, the GITHUB_TOKEN environment variable, or a "
+                    ".env file."
                 )
             raise GitHubError(f"GitHub API access denied ({response.status_code}) for {path}")
         if not response.ok:

@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import sys
 
+from dotenv import load_dotenv
+
 from . import __version__
 from .github_client import GitHubClient, GitHubError
 from .recommender import DEFAULT_LIMIT, DEFAULT_MAX_REPOS, Recommender
@@ -33,7 +35,10 @@ def _add_common_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--token",
         default=None,
-        help="GitHub API token (default: GITHUB_TOKEN environment variable)",
+        help=(
+            "GitHub API token (default: GITHUB_TOKEN from the environment "
+            "or a .env file)"
+        ),
     )
 
 
@@ -72,6 +77,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None, client: GitHubClient | None = None) -> int:
+    load_dotenv()
     args = build_parser().parse_args(argv)
     recommender = Recommender(client or GitHubClient(token=args.token))
 
